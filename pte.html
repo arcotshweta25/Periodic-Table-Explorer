@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Periodic Table Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+/* Login Overlay Styles */
+#login-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: #0d1117;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.login-card {
+  background: #161b22;
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid #30363d;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.login-card input {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  color: white;
+}
+#user-display {
+  text-align: right;
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #8b949e;
+}
+    body {
+      font-family: Poppins, Arial, sans-serif;
+      background: #0d1117;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+      font-size: 32px;
+      font-weight: bold;
+      color: #58a6ff;
+    }
+    #tabs {
+      text-align: center;
+      margin: 20px 0;
+    }
+    #tabs button {
+      padding: 12px 25px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #161b22;
+      color: #58a6ff;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    #tabs button:hover {
+      background: #238636;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+      padding: 20px;
+    }
+    #table, #reaction-table {
+        display: grid;
+        grid-template-columns: repeat(18, 80px);
+        grid-auto-rows: 80px;
+        gap: 5px;
+        width: max-content;
+        margin: auto;
+        justify-content: center;
+    }
+    .element {
+      border-radius: 8px;
+      padding: 5px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+      border: 1px solid #333;
+      color: black;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .element:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 10px #58a6ff;
+    }
+    #search-area {
+      text-align: center;
+      margin: 20px;
+    }
+    #search {
+      padding: 10px;
+      width: 300px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+    }
+    button.next-question {
+      margin-top: 10px;
+      background: #238636;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #quiz-section {
+      margin: 40px auto;
+      width: 60%;
+      background: #111;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    #quiz-section input {
+      padding: 10px;
+      font-size: 16px;
+      width: 50%;
+      border-radius: 8px;
+      border: none;
+      margin-top: 10px;
+    }
+    #quiz-section button {
+      margin-top: 10px;
+      padding: 10px 15px;
+      background: #238636;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #reaction-tab h2 {
+      color: #58a6ff;
+    }
+    #reaction-result {
+      color: #fff;
+      font-size: 18px;
+    }
+    #clear-reaction {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background: #238636;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #info-box {
+      margin-top: 20px;
+      padding: 15px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background: #161b22;
+      display: none;
+      color: white;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+.logout-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin-left: 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: 0.2s;
+}
+.logout-btn:hover {
+  background: #cc0000;
+}
+    }
+  </style>
+</head>
+<body>
+<div id="login-overlay">
+  <div class="login-card">
+    <h2>Welcome to Periodic Table Explorer</h2>
+    <input type="text" id="login-name" placeholder="Enter Name">
+    <input type="password" id="login-pass" placeholder="Enter Password">
+    <button onclick="handleLogin()" style="width:100%; padding:10px; background:#238636; color:white; border:none; border-radius:6px; cursor:pointer;">Login</button>
+  </div>
+</div>
+
+<div id="user-display"></div>
+  <header>Periodic Table Explorer</header>
+
+  <div id="tabs">
+    <button onclick="showTab('table-tab')">Periodic Table</button>
+    <button onclick="showTab('quiz-tab')">Quiz</button>
+    <button onclick="showTab('reaction-tab')">Chemical Reactions</button>
+  </div>
+
+  <!-- Periodic Table Tab -->
+  <div id="table-tab" class="tab-content">
+    <div id="search-area">
+      <input type="text" id="search" placeholder="Search by symbol or atomic number">
+      <button onclick="searchElement()">Search</button>
+    </div>
+    <div id="search-result"></div>
+    <div id="table"></div>
+    <div id="info-box"></div>
+  </div>
+
+  <!-- Quiz Tab -->
+  <div id="quiz-tab" class="tab-content">
+    <div id="quiz-section">
+      <div id="quiz-question"></div>
+      <input type="text" id="quiz-answer" placeholder="Your answer">
+      <button onclick="checkQuiz()">Submit</button>
+      <div id="quiz-feedback" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- Chemical Reaction Tab -->
+  <div id="reaction-tab" class="tab-content">
+    <h2>Chemical Reaction Simulator</h2>
+    <p>Select 2 or more elements to see the reaction.</p>
+    <div id="reaction-table"></div>
+    <div id="reaction-result" style="margin-top:20px;"></div>
+    <button id="clear-reaction">Clear Selection</button>
+  </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+const SUPABASE_URL = "YOUR_PROJECT_URL";
+const SUPABASE_ANON_KEY = "YOUR_PUBLIC_ANON_KEY";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const elements = [
+      {number:1,symbol:"H",name:"Hydrogen",mass:1.008,group:1,period:1,category:"Non-metal"},
+      {number:2,symbol:"He",name:"Helium",mass:4.0026,group:18,period:1,category:"Noble Gas"},
+      {number:3,symbol:"Li",name:"Lithium",mass:6.94,group:1,period:2,category:"Alkali Metal"},
+      {number:4,symbol:"Be",name:"Beryllium",mass:9.0122,group:2,period:2,category:"Alkaline Earth Metal"},
+      {number:5,symbol:"B",name:"Boron",mass:10.81,group:13,period:2,category:"Metalloid"},
+      {number:6,symbol:"C",name:"Carbon",mass:12.011,group:14,period:2,category:"Non-metal"},
+      {number:7,symbol:"N",name:"Nitrogen",mass:14.007,group:15,period:2,category:"Non-metal"},
+      {number:8,symbol:"O",name:"Oxygen",mass:15.999,group:16,period:2,category:"Non-metal"},
+      {number:9,symbol:"F",name:"Fluorine",mass:18.998,group:17,period:2,category:"Halogen"},
+      {number:10,symbol:"Ne",name:"Neon",mass:20.180,group:18,period:2,category:"Noble Gas"},
+      {number:11,symbol:"Na",name:"Sodium",mass:22.990,group:1,period:3,category:"Alkali Metal"},
+      {number:12,symbol:"Mg",name:"Magnesium",mass:24.305,group:2,period:3,category:"Alkaline Earth Metal"},
+      {number:13,symbol:"Al",name:"Aluminium",mass:26.982,group:13,period:3,category:"Post-Transition Metal"},
+      {number:14,symbol:"Si",name:"Silicon",mass:28.085,group:14,period:3,category:"Metalloid"},
+      {number:15,symbol:"P",name:"Phosphorus",mass:30.974,group:15,period:3,category:"Non-metal"},
+      {number:16,symbol:"S",name:"Sulfur",mass:32.06,group:16,period:3,category:"Non-metal"},
+      {number:17,symbol:"Cl",name:"Chlorine",mass:35.45,group:17,period:3,category:"Halogen"},
+      {number:18,symbol:"Ar",name:"Argon",mass:39.948,group:18,period:3,category:"Noble Gas"},
+      {number:19,symbol:"K",name:"Potassium",mass:39.098,group:1,period:4,category:"Alkali Metal"},
+      {number:20,symbol:"Ca",name:"Calcium",mass:40.078,group:2,period:4,category:"Alkaline Earth Metal"},
+      {number:21,symbol:"Sc",name:"Scandium",mass:44.956,group:3,period:4,category:"Transition Metal"},
+      {number:22,symbol:"Ti",name:"Titanium",mass:47.867,group:4,period:4,category:"Transition Metal"},
+      {number:23,symbol:"V",name:"Vanadium",mass:50.942,group:5,period:4,category:"Transition Metal"},
+      {number:24,symbol:"Cr",name:"Chromium",mass:51.996,group:6,period:4,category:"Transition Metal"},
+      {number:25,symbol:"Mn",name:"Manganese",mass:54.938,group:7,period:4,category:"Transition Metal"},
+      {number:26,symbol:"Fe",name:"Iron",mass:55.845,group:8,period:4,category:"Transition Metal"},
+      {number:27,symbol:"Co",name:"Cobalt",mass:58.933,group:9,period:4,category:"Transition Metal"},
+      {number:28,symbol:"Ni",name:"Nickel",mass:58.693,group:10,period:4,category:"Transition Metal"},
+      {number:29,symbol:"Cu",name:"Copper",mass:63.546,group:11,period:4,category:"Transition Metal"},
+      {number:30,symbol:"Zn",name:"Zinc",mass:65.38,group:12,period:4,category:"Transition Metal"},
+      {number:31,symbol:"Ga",name:"Gallium",mass:69.723,group:13,period:4,category:"Post-Transition Metal"},
+      {number:32,symbol:"Ge",name:"Germanium",mass:72.63,group:14,period:4,category:"Metalloid"},
+      {number:33,symbol:"As",name:"Arsenic",mass:74.922,group:15,period:4,category:"Metalloid"},
+      {number:34,symbol:"Se",name:"Selenium",mass:78.971,group:16,period:4,category:"Non-metal"},
+      {number:35,symbol:"Br",name:"Bromine",mass:79.904,group:17,period:4,category:"Halogen"},
+      {number:36,symbol:"Kr",name:"Krypton",mass:83.798,group:18,period:4,category:"Noble Gas"},
+      {number:37,symbol:"Rb",name:"Rubidium",mass:85.468,group:1,period:5,category:"Alkali Metal"},
+      {number:38,symbol:"Sr",name:"Strontium",mass:87.62,group:2,period:5,category:"Alkaline Earth Metal"},
+      {number:39,symbol:"Y",name:"Yttrium",mass:88.906,group:3,period:5,category:"Transition Metal"},
+      {number:40,symbol:"Zr",name:"Zirconium",mass:91.224,group:4,period:5,category:"Transition Metal"},
+      {number:41,symbol:"Nb",name:"Niobium",mass:92.906,group:5,period:5,category:"Transition Metal"},
+      {number:42,symbol:"Mo",name:"Molybdenum",mass:95.95,group:6,period:5,category:"Transition Metal"},
+      {number:43,symbol:"Tc",name:"Technetium",mass:98,group:7,period:5,category:"Transition Metal"},
+      {number:44,symbol:"Ru",name:"Ruthenium",mass:101.07,group:8,period:5,category:"Transition Metal"},
+      {number:45,symbol:"Rh",name:"Rhodium",mass:102.91,group:9,period:5,category:"Transition Metal"},
+      {number:46,symbol:"Pd",name:"Palladium",mass:106.42,group:10,period:5,category:"Transition Metal"},
+      {number:47,symbol:"Ag",name:"Silver",mass:107.87,group:11,period:5,category:"Transition Metal"},
+      {number:48,symbol:"Cd",name:"Cadmium",mass:112.41,group:12,period:5,category:"Transition Metal"},
+      {number:49,symbol:"In",name:"Indium",mass:114.82,group:13,period:5,category:"Post-Transition Metal"},
+      {number:50,symbol:"Sn",name:"Tin",mass:118.71,group:14,period:5,category:"Post-Transition Metal"},
+      {number:51,symbol:"Sb",name:"Antimony",mass:121.76,group:15,period:5,category:"Metalloid"},
+      {number:52,symbol:"Te",name:"Tellurium",mass:127.60,group:16,period:5,category:"Metalloid"},
+      {number:53,symbol:"I",name:"Iodine",mass:126.90,group:17,period:5,category:"Halogen"},
+      {number:54,symbol:"Xe",name:"Xenon",mass:131.29,group:18,period:5,category:"Noble Gas"},
+      {number:55,symbol:"Cs",name:"Cesium",mass:132.91,group:1,period:6,category:"Alkali Metal"},
+      {number:56,symbol:"Ba",name:"Barium",mass:137.33,group:2,period:6,category:"Alkaline Earth Metal"},
+      {number:57,symbol:"La",name:"Lanthanum",mass:138.91,group:3,period:6,category:"Lanthanide"},
+      {number:58,symbol:"Ce",name:"Cerium",mass:140.12,group:null,period:8,category:"Lanthanide"},
+      {number:59,symbol:"Pr",name:"Praseodymium",mass:140.91,group:null,period:8,category:"Lanthanide"},
+      {number:60,symbol:"Nd",name:"Neodymium",mass:144.24,group:null,period:8,category:"Lanthanide"},
+      {number:61,symbol:"Pm",name:"Promethium",mass:145,group:null,period:8,category:"Lanthanide"},
+      {number:62,symbol:"Sm",name:"Samarium",mass:150.36,group:null,period:8,category:"Lanthanide"},
+      {number:63,symbol:"Eu",name:"Europium",mass:151.96,group:null,period:8,category:"Lanthanide"},
+      {number:64,symbol:"Gd",name:"Gadolinium",mass:157.25,group:null,period:8,category:"Lanthanide"},
+      {number:65,symbol:"Tb",name:"Terbium",mass:158.93,group:null,period:8,category:"Lanthanide"},
+      {number:66,symbol:"Dy",name:"Dysprosium",mass:162.50,group:null,period:8,category:"Lanthanide"},
+      {number:67,symbol:"Ho",name:"Holmium",mass:164.93,group:null,period:8,category:"Lanthanide"},
+      {number:68,symbol:"Er",name:"Erbium",mass:167.26,group:null,period:8,category:"Lanthanide"},
+      {number:69,symbol:"Tm",name:"Thulium",mass:168.93,group:null,period:8,category:"Lanthanide"},
+      {number:70,symbol:"Yb",name:"Ytterbium",mass:173.05,group:null,period:8,category:"Lanthanide"},
+      {number:71,symbol:"Lu",name:"Lutetium",mass:174.97,group:3,period:6,category:"Lanthanide"},
+      {number:72,symbol:"Hf",name:"Hafnium",mass:178.49,group:4,period:6,category:"Transition Metal"},
+      {number:73,symbol:"Ta",name:"Tantalum",mass:180.95,group:5,period:6,category:"Transition Metal"},
+      {number:74,symbol:"W",name:"Tungsten",mass:183.84,group:6,period:6,category:"Transition Metal"},
+      {number:75,symbol:"Re",name:"Rhenium",mass:186.21,group:7,period:6,category:"Transition Metal"},
+      {number:76,symbol:"Os",name:"Osmium",mass:190.23,group:8,period:6,category:"Transition Metal"},
+      {number:77,symbol:"Ir",name:"Iridium",mass:192.22,group:9,period:6,category:"Transition Metal"},
+      {number:78,symbol:"Pt",name:"Platinum",mass:195.08,group:10,period:6,category:"Transition Metal"},
+      {number:79,symbol:"Au",name:"Gold",mass:196.97,group:11,period:6,category:"Transition Metal"},
+      {number:80,symbol:"Hg",name:"Mercury",mass:200.59,group:12,period:6,category:"Transition Metal"},
+      {number:81,symbol:"Tl",name:"Thallium",mass:204.38,group:13,period:6,category:"Post-Transition Metal"},
+      {number:82,symbol:"Pb",name:"Lead",mass:207.2,group:14,period:6,category:"Post-Transition Metal"},
+      {number:83,symbol:"Bi",name:"Bismuth",mass:208.98,group:15,period:6,category:"Post-Transition Metal"},
+      {number:84,symbol:"Po",name:"Polonium",mass:209,group:16,period:6,category:"Metalloid"},
+      {number:85,symbol:"At",name:"Astatine",mass:210,group:17,period:6,category:"Halogen"},
+      {number:86,symbol:"Rn",name:"Radon",mass:222,group:18,period:6,category:"Noble Gas"},
+      {number:87,symbol:"Fr",name:"Francium",mass:223,group:1,period:7,category:"Alkali Metal"},
+      {number:88,symbol:"Ra",name:"Radium",mass:226,group:2,period:7,category:"Alkaline Earth Metal"},
+      {number:89,symbol:"Ac",name:"Actinium",mass:227,group:3,period:7,category:"Actinide"},
+      {number:90,symbol:"Th",name:"Thorium",mass:232.04,group:null,period:9,category:"Actinide"},
+      {number:91,symbol:"Pa",name:"Protactinium",mass:231.04,group:null,period:9,category:"Actinide"},
+      {number:92,symbol:"U",name:"Uranium",mass:238.03,group:null,period:9,category:"Actinide"},
+      {number:93,symbol:"Np",name:"Neptunium",mass:237,group:null,period:9,category:"Actinide"},
+      {number:94,symbol:"Pu",name:"Plutonium",mass:244,group:null,period:9,category:"Actinide"},
+      {number:95,symbol:"Am",name:"Americium",mass:243,group:null,period:9,category:"Actinide"},
+      {number:96,symbol:"Cm",name:"Curium",mass:247,group:null,period:9,category:"Actinide"},
+      {number:97,symbol:"Bk",name:"Berkelium",mass:247,group:null,period:9,category:"Actinide"},
+      {number:98,symbol:"Cf",name:"Californium",mass:251,group:null,period:9,category:"Actinide"},
+      {number:99,symbol:"Es",name:"Einsteinium",mass:252,group:null,period:9,category:"Actinide"},
+      {number:100,symbol:"Fm",name:"Fermium",mass:257,group:null,period:9,category:"Actinide"},
+      {number:101,symbol:"Md",name:"Mendelevium",mass:258,group:null,period:9,category:"Actinide"},
+      {number:102,symbol:"No",name:"Nobelium",mass:259,group:null,period:9,category:"Actinide"},
+      {number:103,symbol:"Lr",name:"Lawrencium",mass:262,group:3,period:7,category:"Actinide"},
+      {number:104,symbol:"Rf",name:"Rutherfordium",mass:267,group:4,period:7,category:"Transition Metal"},
+      {number:105,symbol:"Db",name:"Dubnium",mass:268,group:5,period:7,category:"Transition Metal"},
+      {number:106,symbol:"Sg",name:"Seaborgium",mass:271,group:6,period:7,category:"Transition Metal"},
+      {number:107,symbol:"Bh",name:"Bohrium",mass:270,group:7,period:7,category:"Transition Metal"},
+      {number:108,symbol:"Hs",name:"Hassium",mass:277,group:8,period:7,category:"Transition Metal"},
+      {number:109,symbol:"Mt",name:"Meitnerium",mass:278,group:9,period:7,category:"Transition Metal"},
+      {number:110,symbol:"Ds",name:"Darmstadtium",mass:281,group:10,period:7,category:"Transition Metal"},
+      {number:111,symbol:"Rg",name:"Roentgenium",mass:282,group:11,period:7,category:"Transition Metal"},
+      {number:112,symbol:"Cn",name:"Copernicium",mass:285,group:12,period:7,category:"Transition Metal"},
+      {number:113,symbol:"Nh",name:"Nihonium",mass:286,group:13,period:7,category:"Post-Transition Metal"},
+      {number:114,symbol:"Fl",name:"Flerovium",mass:289,group:14,period:7,category:"Post-Transition Metal"},
+      {number:115,symbol:"Mc",name:"Moscovium",mass:288,group:15,period:7,category:"Post-Transition Metal"},
+      {number:116,symbol:"Lv",name:"Livermorium",mass:293,group:16,period:7,category:"Post-Transition Metal"},
+      {number:117,symbol:"Ts",name:"Tennessine",mass:294,group:17,period:7,category:"Halogen"},
+      {number:118,symbol:"Og",name:"Oganesson",mass:294,group:18,period:7,category:"Noble Gas"}
+    ];
+
+    function showTab(tabId){
+      document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+      document.getElementById(tabId).style.display = 'block';
+    }
+    showTab('table-tab');
+
+    const tableDiv = document.getElementById('table');
+    const infoBox = document.getElementById('info-box');
+
+    function getCategoryColor(category){
+      switch(category){
+        case "Non-metal": return "#a8dadc";
+        case "Noble Gas": return "#ffb6b9";
+        case "Alkali Metal": return "#ffd6a5";
+        case "Alkaline Earth Metal": return "#fdffb6";
+        case "Metalloid": return "#caffbf";
+        case "Halogen": return "#ffe5b4";
+        case "Transition Metal": return "#ffadad";
+        case "Post-Transition Metal": return "#d0f4de";
+        case "Lanthanide": return "#bdb2ff";
+        case "Actinide": return "#ffcbf2";
+        default: return "#888";
+      }
+    }
+
+    elements.forEach(el => {
+      const btn = document.createElement('div');
+      btn.className = 'element';
+      btn.style.background = getCategoryColor(el.category);
+      btn.innerHTML = `<strong>${el.symbol}</strong><br>${el.number}`;
+
+      let row = el.period;
+      let col = el.group;
+
+      if(el.category === "Lanthanide"){
+        row = 8;
+        col = el.number - 56;
+      } else if(el.category === "Actinide"){
+        row = 9;
+        col = el.number - 88;
+      }
+
+      btn.style.gridRowStart = row;
+      btn.style.gridColumnStart = col;
+
+      btn.addEventListener('click', () => {
+        infoBox.style.display = 'block';
+        infoBox.innerHTML = `
+          <strong>${el.name} (${el.symbol})</strong><br>
+          Atomic Number: ${el.number}<br>
+          Atomic Mass: ${el.mass}<br>
+          Group: ${el.group}, Period: ${el.period}<br>
+          Category: ${el.category}
+        `;
+      });
+
+      tableDiv.appendChild(btn);
+    });
+
+    function searchElement(){
+      const input = document.getElementById('search').value.trim().toLowerCase();
+      const resultDiv = document.getElementById('search-result');
+      if(!input){
+        resultDiv.style.display = 'none';
+        return;
+      }
+      const el = elements.find(e => e.symbol.toLowerCase() === input || String(e.number) === input);
+      resultDiv.style.display = 'block';
+      if(el){
+        resultDiv.innerHTML = `
+          <strong>${el.name} (${el.symbol})</strong><br>
+          Atomic Number: ${el.number}<br>
+          Atomic Mass: ${el.mass}<br>
+          Group: ${el.group}, Period: ${el.period}<br>
+          Category: ${el.category}
+        `;
+      } else {
+        resultDiv.innerHTML = 'Element not found!';
+      }
+    }
+
+    // Quiz
+    const quizQuestions = [
+  {q:"Symbol of Hydrogen?", a:"H"},
+  {q:"Atomic number of Carbon?", a:"6"},
+  {q:"Which element is a noble gas?", a:"He"},
+  {q:"Symbol of Sodium?", a:"Na"},
+  {q:"Atomic mass of Oxygen?", a:"15.999"},
+
+  // Additional Questions
+  {q:"Atomic number of Hydrogen?", a:"1"},
+  {q:"Symbol of Potassium?", a:"K"},
+  {q:"Which element has symbol 'Fe'?", a:"Iron"},
+  {q:"Atomic number of Oxygen?", a:"8"},
+  {q:"Which gas is used by plants for photosynthesis?", a:"CO2"},
+  {q:"What is the chemical formula of water?", a:"H2O"},
+  {q:"Symbol of Calcium?", a:"Ca"},
+  {q:"Which element is known as 'Quick Silver'?", a:"Mercury"},
+  {q:"Atomic number of Nitrogen?", a:"7"},
+  {q:"Which element has the highest electronegativity?", a:"Fluorine"},
+  {q:"Symbol of Gold?", a:"Au"},
+  {q:"Symbol of Silver?", a:"Ag"},
+  {q:"Atomic number of Neon?", a:"10"},
+  {q:"Chemical formula of Salt?", a:"NaCl"},
+  {q:"Which element is liquid at room temperature? (metal)", a:"Mercury"},
+  {q:"pH value of pure water?", a:"7"},
+  {q:"Which particle has a positive charge?", a:"Proton"},
+  {q:"Which gas is known as 'Laughing gas'?", a:"N2O"},
+  {q:"Which gas is known as 'Ozone'?", a:"O3"},
+  {q:"Chemical formula of Methane?", a:"CH4"},
+  {q:"Atomic number of Helium?", a:"2"}
+];
+
+
+    let currentQuiz = 0;
+    const quizQDiv = document.getElementById('quiz-question');
+    const quizInput = document.getElementById('quiz-answer');
+    const quizFeedback = document.getElementById('quiz-feedback');
+
+    function loadQuiz(){
+      quizInput.value = '';
+      quizFeedback.innerHTML = '';
+      const q = quizQuestions[currentQuiz];
+      quizQDiv.innerHTML = `<strong>Q${currentQuiz+1}:</strong> ${q.q}`;
+    }
+    loadQuiz();
+
+    function checkQuiz(){
+      const userAns = quizInput.value.trim().toLowerCase();
+      const correctAns = quizQuestions[currentQuiz].a.toLowerCase();
+      if(userAns === correctAns){
+        quizFeedback.innerHTML = `<span style="color:#2ea043">Correct!</span> <button class="next-question" onclick="nextQuiz()">Next</button>`;
+      } else {
+        quizFeedback.innerHTML = `<span style="color:#ff6b6b">Wrong! Correct answer: ${quizQuestions[currentQuiz].a}</span> <button class="next-question" onclick="nextQuiz()">Next</button>`;
+      }
+    }
+    function nextQuiz(){
+      currentQuiz = (currentQuiz + 1) % quizQuestions.length;
+      loadQuiz();
+    }
+
+    // Chemical reactions
+    const reactions = [
+  { reactants: ["Na", "Cl"], product: "NaCl (Sodium Chloride)" },
+  { reactants: ["H", "O"], product: "H₂O (Water)" },
+  { reactants: ["Mg", "Cl"], product: "MgCl₂ (Magnesium Chloride)" },
+
+  // More metal + non-metal reactions
+  { reactants: ["K", "Cl"], product: "KCl (Potassium Chloride)" },
+  { reactants: ["Ca", "Cl"], product: "CaCl₂ (Calcium Chloride)" },
+  { reactants: ["Al", "Cl"], product: "AlCl₃ (Aluminium Chloride)" },
+
+  // Oxidation reactions
+  { reactants: ["Fe", "O"], product: "Fe₂O₃ (Iron Oxide / Rust)" },
+  { reactants: ["Mg", "O"], product: "MgO (Magnesium Oxide)" },
+  { reactants: ["Cu", "O"], product: "CuO (Copper Oxide)" },
+  { reactants: ["Zn", "O"], product: "ZnO (Zinc Oxide)" },
+  { reactants: ["S", "O"], product: "SO₂ (Sulfur Dioxide)" },
+  { reactants: ["P", "O"], product: "P₂O₅ (Phosphorus Pentoxide)" },
+
+  // Acid formation
+  { reactants: ["H", "Cl"], product: "HCl (Hydrochloric Acid)" },
+  { reactants: ["H", "N"], product: "NH₃ (Ammonia)" },
+  { reactants: ["N", "O"], product: "NO / NO₂ (Nitrogen Oxides)" },
+
+  // Halogen–hydrogen reactions
+  { reactants: ["H", "F"], product: "HF (Hydrogen Fluoride)" },
+  { reactants: ["H", "Br"], product: "HBr (Hydrogen Bromide)" },
+  { reactants: ["H", "I"], product: "HI (Hydrogen Iodide)" },
+
+  // Metal + chlorine reactions
+  { reactants: ["Ag", "Cl"], product: "AgCl (Silver Chloride)" },
+  { reactants: ["Ba", "Cl"], product: "BaCl₂ (Barium Chloride)" },
+
+  // Displacement reactions
+  { reactants: ["Zn", "H"], product: "H₂ gas released (Zinc + Acid Reaction)" },
+  { reactants: ["Fe", "Cl"], product: "FeCl₃ (Iron(III) Chloride)" }
+];
+
+
+    const reactionDiv = document.getElementById('reaction-table');
+    const reactionResultDiv = document.getElementById('reaction-result');
+    let selectedReactionElements = [];
+
+    function showReactionTable(elements){
+      reactionDiv.innerHTML = '';
+      elements.forEach(el => {
+        const div = document.createElement('div');
+        div.className = 'element';
+        div.style.background = getCategoryColor(el.category);
+        div.innerHTML = `<strong>${el.symbol}</strong><br>${el.number}`;
+        div.addEventListener('click', () => {
+          if(!selectedReactionElements.includes(el.symbol)){
+            selectedReactionElements.push(el.symbol);
+            div.style.boxShadow = '0 0 15px #58a6ff';
+          } else {
+            selectedReactionElements = selectedReactionElements.filter(s=>s!==el.symbol);
+            div.style.boxShadow = '';
+          }
+          checkReaction();
+        });
+        reactionDiv.appendChild(div);
+      });
+    }
+
+    function checkReaction(){
+      if(selectedReactionElements.length < 2) return;
+      const key = selectedReactionElements.sort().join('+');
+      const reaction = reactions.find(r=>r.reactants.slice().sort().join('+') === key);
+      if(reaction){
+        reactionResultDiv.innerHTML = `<p>${selectedReactionElements.join(' + ')} → ${reaction.product}</p>`;
+      } else {
+        reactionResultDiv.innerHTML = `<p>No reaction found for ${selectedReactionElements.join(' + ')}</p>`;
+      }
+    }
+
+    document.getElementById('clear-reaction').addEventListener('click', ()=>{
+      selectedReactionElements = [];
+      reactionResultDiv.innerHTML = '';
+      document.querySelectorAll('#reaction-table .element').forEach(el => el.style.boxShadow='');
+    });
+
+    showReactionTable(elements);
+// Global State
+let currentUser = { name: "", score: 0 };
+
+async function handleLogin() {
+  const email = document.getElementById('login-name').value;
+  const password = document.getElementById('login-pass').value;
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password,
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    document.getElementById('login-overlay').style.display = 'none';
+    loadUserScore();
+  }
+}
+
+// Function to update the header with name, score, and logout button
+function updateUserDisplay() {
+  const display = document.getElementById('user-display');
+  display.innerHTML = `
+    Welcome, <strong>${currentUser.name}</strong> | 
+    Quiz Score: <span id="display-score">${currentUser.score}</span>
+    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+  `;
+}
+
+// Function to reset everything and show login screen again
+function handleLogout() {
+  // Reset user data
+  currentUser = { name: "", score: 0 };
+  currentQuiz = 0; // Optional: resets quiz progress
+  
+  // Clear input fields in login
+  document.getElementById('login-name').value = "";
+  document.getElementById('login-pass').value = "";
+  
+  // Show the login overlay
+  document.getElementById('login-overlay').style.display = 'flex';
+  
+  // Clear the welcome message and reset quiz display
+  document.getElementById('user-display').innerHTML = "";
+  loadQuiz(); 
+}
+// Update your checkQuiz function to include score tracking:
+async function saveScore() {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  await supabase
+    .from('quiz_scores')
+    .insert([
+      { user_id: user.id, score: currentUser.score }
+    ]);
+}  </script>
+
+</body>
+</html>
